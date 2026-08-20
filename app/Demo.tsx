@@ -33,7 +33,7 @@ export function Demo(){
    <div className="screen-head"><div><span>01 / VIDEO & IMAGE ANALYSIS</span><h2>Upload workplace media.<br/>Get a detailed 5S log.</h2></div><div className="screen-explainer"><div className="source-types"><span>VIDEO</span><span>IMAGE SETS</span></div><p>SiteSight samples uploaded footage and images, selects clear evidence frames, identifies possible 5S conditions, and records each finding with its timestamp, severity and visual evidence.</p></div></div>
    <div className="evidence-wrap">
     <div className="evidence-image">
-     <img src="/workshop-evidence-annotated-v3.png" alt="Extracted workshop frame with six 5S findings annotated directly around the matching evidence"/>
+     <img src="/workshop-evidence-photo-v4.png" alt="Photographic workshop inspection frame with six 5S findings annotated directly around the matching evidence"/>
      <div className="frame-meta"><span>SOURCE VIDEO · INSPECTION 042 · 01:00</span><span>EXTRACTED FRAME · 00:14</span></div>
     </div>
     <div className="finding-strip">
