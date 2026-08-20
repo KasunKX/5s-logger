@@ -4,6 +4,13 @@ const references = [
   { image:"/references/shadow-board.jpg", label:"Visual tool control", source:"Creative Safety Supply", href:"https://www.creativesafetysupply.com/content/education-research/5S/index.html" },
   { image:"/references/tool-control.jpg", label:"A place for every tool", source:"Gemba Lean", href:"https://gemba-lean.com/taller-5s-organizacion-orden-y-limpieza/" },
   { image:"/references/before-after.png", label:"Before and after evidence", source:"AGITEC", href:"https://www.agitec.com/7-66/actualites/maximising-organisational-efficiency-implementing-the-5s-method/" },
+  { image:"/references/floor-zones.jpg", label:"Defined floor locations", source:"Stop-Painting", href:"https://stop-painting.com/5s-lean-resources/" },
+  { image:"/references/workstation-comparison.jpg", label:"Workstation improvement", source:"Ha Thuc Tien", href:"https://medium.com/@hathuctien/the-illusion-of-5s-5127ecd51912" },
+  { image:"/references/workshop-before-after.jpg", label:"A visible transformation", source:"Flow in Motion", href:"https://www.flowinmotion.com/de-5s-valkuilen/" },
+  { image:"/references/shadow-board-system.webp", label:"Standardized tool storage", source:"Monika Auto Components", href:"https://monikaautocomponents.in/portfolio" },
+  { image:"/references/facility-marking.jpg", label:"Marked production zones", source:"Creative Safety Supply", href:"https://www.creativesafetysupply.com/industries/manufacturing/" },
+  { image:"/references/cleaning-station.jpg", label:"Cleaning station standard", source:"TnP Visual Workplace", href:"https://www.visualworkplace.co.uk/discover-inspire/brabant-alucast" },
+  { image:"/references/workbench-transformation.gif", label:"Organized workbench", source:"Viblo", href:"https://viblo.asia/p/5s-methodology-the-secret-to-japanese-success-3KbvZqw1GmWB" },
 ];
 
 export function Demo(){
@@ -23,7 +30,7 @@ export function Demo(){
   </section>
 
   <section className="screen detection" id="detection">
-   <div className="screen-head"><div><span>01 / VIDEO & IMAGE ANALYSIS</span><h2>Video in.<br/><em>5S evidence out.</em></h2></div><div className="screen-explainer"><div className="source-types"><span>VIDEO</span><span>IMAGE SETS</span></div><p>Upload workplace footage or a set of images. SiteSight samples the source, selects clear evidence frames, identifies possible 5S conditions, and logs each finding with its timestamp for review.</p></div></div>
+   <div className="screen-head"><div><span>01 / VIDEO & IMAGE ANALYSIS</span><h2>How SiteSight reviews<br/>video and images.</h2></div><div className="screen-explainer"><div className="source-types"><span>VIDEO</span><span>IMAGE SETS</span></div><p>Upload workplace footage or a set of images. SiteSight samples the source, selects clear evidence frames, identifies possible 5S conditions, and logs each finding with its timestamp for review.</p></div></div>
    <div className="evidence-wrap">
     <div className="evidence-image"><img src="/workshop-analysis.png" alt="Evidence frame extracted from workplace video, showing cartons, an unlabeled bin and loose packaging"/><div className="e-label el1"><b>01</b><span>SET IN ORDER</span></div><div className="e-label el2"><b>02</b><span>STANDARDIZE</span></div><div className="e-label el3"><b>03</b><span>SHINE</span></div><div className="frame-meta"><span>SOURCE VIDEO · INSPECTION 042 · 01:00</span><span>EXTRACTED FRAME · 00:14</span></div></div>
     <div className="finding-strip">
@@ -45,7 +52,7 @@ export function Demo(){
   </section>
 
   <section className="screen references" id="references">
-   <div className="reference-head"><div><span>03 / VISUAL REFERENCES</span><h2>Good 5S is<br/><em>easy to see.</em></h2></div><p>The product should recognize practical visual controls: clear locations, visible standards, clean conditions and evidence of improvement.</p></div>
+   <div className="reference-head"><div><span>03 / VISUAL REFERENCES</span><h2>Examples the system<br/>should learn to recognize.</h2></div><p>Real workplace references for clear locations, visible standards, clean conditions and evidence of improvement.</p></div>
    <div className="reference-grid">{references.map((r,i)=><a href={r.href} target="_blank" rel="noreferrer" key={r.source}><div className="thumb"><img src={r.image} alt={r.label}/><span>0{i+1}</span></div><h3>{r.label}</h3><p>Reference: {r.source} <span>↗</span></p></a>)}</div>
    <footer className="site-footer"><div className="footer-brand"><a className="brand inverse" href="#overview"><span className="brand-mark"><i/><i/><i/><i/><i/></span>SiteSight</a><span>Visual workplace intelligence</span></div><div className="footer-links"><a href="#detection">Detection</a><a href="#workflow">Workflow</a><a href="#references">References</a></div><div className="footer-meta"><span>CONCEPT · 2026</span><a href="#overview">Back to top ↑</a></div></footer>
   </section>
