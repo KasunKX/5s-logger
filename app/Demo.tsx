@@ -32,11 +32,20 @@ export function Demo(){
   <section className="screen detection" id="detection">
    <div className="screen-head"><div><span>01 / VIDEO & IMAGE ANALYSIS</span><h2>Upload workplace media.<br/>Get a detailed 5S log.</h2></div><div className="screen-explainer"><div className="source-types"><span>VIDEO</span><span>IMAGE SETS</span></div><p>SiteSight samples uploaded footage and images, selects clear evidence frames, identifies possible 5S conditions, and records each finding with its timestamp, severity and visual evidence.</p></div></div>
    <div className="evidence-wrap">
-    <div className="evidence-image"><img src="/workshop-analysis.png" alt="Evidence frame extracted from workplace video, showing cartons, an unlabeled bin and loose packaging"/><div className="e-label el1"><b>01</b><span>SET IN ORDER</span></div><div className="e-label el2"><b>02</b><span>STANDARDIZE</span></div><div className="e-label el3"><b>03</b><span>SHINE</span></div><div className="frame-meta"><span>SOURCE VIDEO · INSPECTION 042 · 01:00</span><span>EXTRACTED FRAME · 00:14</span></div></div>
+    <div className="evidence-image">
+     <img src="/workshop-evidence-v2.png" alt="Extracted workshop frame showing a tool wall with highlighted 5S review points"/>
+     <div className="frame-meta"><span>SOURCE VIDEO · INSPECTION 042 · 01:00</span><span>EXTRACTED FRAME · 00:14</span></div>
+     <div className="detection-box box-sort"><div className="e-tag"><b>01</b><span>SORT</span></div></div>
+     <div className="detection-box box-order-a"><div className="e-tag"><b>02</b><span>SET IN ORDER</span></div></div>
+     <div className="detection-box box-order-b"><div className="e-tag"><b>03</b><span>SET IN ORDER</span></div></div>
+     <div className="detection-box box-standard"><div className="e-tag"><b>04</b><span>STANDARDIZE</span></div></div>
+     <div className="detection-box box-shine"><div className="e-tag"><b>05</b><span>SHINE</span></div></div>
+     <div className="detection-box box-sustain"><div className="e-tag"><b>06</b><span>SUSTAIN</span></div><div className="audit-sheet"><strong>5S AUDIT</strong><small>AREA: MAINTENANCE</small><small>STATUS: OVERDUE</small></div></div>
+    </div>
     <div className="finding-strip">
-     <article><b>01</b><div><span>SET IN ORDER</span><h3>Cartons cross the marked aisle</h3></div><small>00:14 · HIGH</small></article>
-     <article><b>02</b><div><span>STANDARDIZE</span><h3>Storage bin has no visible label</h3></div><small>00:22 · MEDIUM</small></article>
-     <article><b>03</b><div><span>SHINE</span><h3>Loose packaging below workbench</h3></div><small>00:41 · MEDIUM</small></article>
+     <article><div className="finding-kind"><i/>SET IN ORDER</div><h3>Wrench placed in the wrong position</h3><p><b>00:14</b><span>·</span><em>HIGH</em></p></article>
+     <article><div className="finding-kind"><i/>STANDARDIZE</div><h3>Tool position has no visible label</h3><p><b>00:22</b><span>·</span><em>MEDIUM</em></p></article>
+     <article><div className="finding-kind"><i/>SHINE</div><h3>Metal debris left on workbench</h3><p><b>00:41</b><span>·</span><em>MEDIUM</em></p></article>
     </div>
    </div>
   </section>
