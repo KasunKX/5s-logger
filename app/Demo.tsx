@@ -1,23 +1,53 @@
 "use client";
-import { useEffect, useState } from "react";
 
-const findings = [
-  { time:"00:08",sec:8,tag:"SET IN ORDER",title:"Materials extend into marked aisle",note:"Two cartons overlap the pedestrian route boundary.",severity:"High",color:"amber" },
-  { time:"00:22",sec:22,tag:"STANDARDIZE",title:"Storage bin has no visible label",note:"The grey bin cannot be identified from the inspection view.",severity:"Medium",color:"blue" },
-  { time:"00:41",sec:41,tag:"SHINE",title:"Packaging waste below workbench",note:"Loose wrapping and paper should be cleared from the station.",severity:"Medium",color:"green" },
+const references = [
+  { image:"/references/shadow-board.jpg", label:"Visual tool control", source:"Creative Safety Supply", href:"https://www.creativesafetysupply.com/content/education-research/5S/index.html" },
+  { image:"/references/tool-control.jpg", label:"A place for every tool", source:"Gemba Lean", href:"https://gemba-lean.com/taller-5s-organizacion-orden-y-limpieza/" },
+  { image:"/references/before-after.png", label:"Before and after evidence", source:"AGITEC", href:"https://www.agitec.com/7-66/actualites/maximising-organisational-efficiency-implementing-the-5s-method/" },
 ];
-const principles = [["01","Sort","Keep only what the work requires."],["02","Set in order","Give every item a clear place."],["03","Shine","Make cleanliness visible and routine."],["04","Standardize","Turn good conditions into a standard."],["05","Sustain","Measure whether improvement holds."]];
 
 export function Demo(){
- const [active,setActive]=useState(0),[playing,setPlaying]=useState(true),[progress,setProgress]=useState(17);
- useEffect(()=>{if(!playing)return;const id=window.setInterval(()=>setProgress(p=>p>=100?0:p+.25),120);return()=>window.clearInterval(id)},[playing]);
- const selectFinding=(i:number)=>{setActive(i);setProgress(findings[i].sec/60*100);setPlaying(false)};
  return <main>
-  <nav className="nav shell"><a className="brand" href="#top"><span className="brand-mark"><i/><i/><i/><i/><i/></span><span>SiteSight</span></a><div className="nav-links"><a href="#workspace">Workspace</a><a href="#method">Method</a><a href="#principles">5S framework</a></div><a className="nav-cta" href="#workspace">View demonstration <span>↗</span></a></nav>
-  <section className="hero shell" id="top"><div className="eyebrow"><span className="pulse"/> VISUAL WORKPLACE INTELLIGENCE</div><h1>See the workplace.<br/><em>Improve what matters.</em></h1><p className="hero-copy">A visual 5S workspace that turns ordinary inspection video into clear observations, evidence and accountable action.</p><div className="hero-actions"><a className="primary" href="#workspace">Explore the analysis <span>↓</span></a><span className="microcopy">Built for improvement teams,<br/>not black-box decisions.</span></div><div className="hero-stats"><div><strong>5</strong><span>principles assessed</span></div><div><strong>02s</strong><span>frame sampling</span></div><div><strong>01</strong><span>reviewable action log</span></div></div></section>
-  <section className="workspace-wrap" id="workspace"><div className="section-intro shell"><span>01 / THE WORKSPACE</span><h2>Every observation stays<br/>connected to its evidence.</h2><p>Review the moment, understand the context, and decide what becomes an action.</p></div><div className="app-shell shell"><div className="app-top"><div className="mini-brand"><span className="brand-mark small"><i/><i/><i/><i/><i/></span> SiteSight <b>/</b> Inspection 042</div><div className="app-meta"><span><i className="status-dot"/> ANALYSIS COMPLETE</span><span>PACKAGING / EAST BAY</span><button>•••</button></div></div><div className="app-grid"><div className="visual-panel"><div className="media-stage"><img src="/workshop-analysis.png" alt="Industrial workshop prepared for a visual 5S inspection demonstration"/><div className="camera-label">CAM 01 · EAST BAY <span>REC</span></div><div className={`detect-box box-cartons ${active===0?"active":""}`}><b>01</b><span>SET IN ORDER</span></div><div className={`detect-box box-bin ${active===1?"active":""}`}><b>02</b><span>STANDARDIZE</span></div><div className={`detect-box box-waste ${active===2?"active":""}`}><b>03</b><span>SHINE</span></div></div><div className="player"><button onClick={()=>setPlaying(!playing)}>{playing?"Ⅱ":"▶"}</button><span>{String(Math.floor(progress*.6)).padStart(2,"0")} : 00</span><div className="track" onClick={e=>setProgress(e.nativeEvent.offsetX/e.currentTarget.offsetWidth*100)}><i style={{width:`${progress}%`}}/>{findings.map((f,i)=><button aria-label={`Finding at ${f.time}`} key={f.time} onClick={e=>{e.stopPropagation();selectFinding(i)}} className={`marker m${i}`}/>)}</div><span>01 : 00</span><button>⛶</button></div><div className="timeline"><div className="timeline-title"><span>OBSERVATION TIMELINE</span><b>3 findings · 1:00 min</b></div><div className="timeline-row"><span>VIDEO</span><div className="ticks">{[0,10,20,30,40,50,60].map(n=><i key={n}>{n}:00</i>)}</div></div><div className="timeline-row"><span>FINDINGS</span><div className="finding-track">{findings.map((f,i)=><button key={f.time} className={`event e${i} ${active===i?"active":""}`} onClick={()=>selectFinding(i)}><i/>{f.tag}</button>)}</div></div></div></div><aside className="findings-panel"><div className="findings-head"><div><span>REVIEW QUEUE</span><h3>Findings</h3></div><b>03</b></div><div className="score"><div className="ring">78<span>/100</span></div><div><b>Workplace condition</b><span>3 opportunities need review</span></div></div><div className="finding-list">{findings.map((f,i)=><button key={f.time} onClick={()=>selectFinding(i)} className={active===i?"active":""}><div className="finding-no">0{i+1}</div><div><span className={`tag ${f.color}`}>{f.tag}</span><h4>{f.title}</h4><p>{f.note}</p><div className="finding-foot"><span>{f.time}–00:{String(f.sec+6).padStart(2,"0")}</span><span>Severity: <b>{f.severity}</b></span></div></div></button>)}</div><button className="review">Review selected finding <span>→</span></button></aside></div></div><div className="caption shell"><span>INTERACTIVE CONCEPT DEMONSTRATION</span><p>For this concept, observations are intentionally authored and synchronized to the visual. In the future product, models propose findings and people confirm them.</p></div></section>
-  <section className="method shell" id="method"><div className="section-intro dark"><span>02 / HOW IT WORKS</span><h2>Efficient by design.<br/>Human by decision.</h2></div><div className="flow">{[["01","Sample intelligently","One frame every two seconds creates a fast, economical first pass."],["02","Find the signal","Local detection and OCR surface objects, labels and unusual conditions."],["03","Interpret context","A compact vision model maps selected evidence to site-specific 5S rules."],["04","Confirm & act","A person approves the evidence, priority, owner and corrective action."]].map((x,i)=><div className="flow-item" key={x[0]}><b>{x[0]}</b><h3>{x[1]}</h3><p>{x[2]}</p>{i<3&&<i>→</i>}</div>)}</div><div className="principle-callout"><span>THE OPERATING PRINCIPLE</span><blockquote>“AI proposes.<br/><em>People decide.</em>”</blockquote><p>Every finding remains traceable to a timestamp, frame and workplace rule.</p></div></section>
-  <section className="principles shell" id="principles"><div className="section-intro"><span>03 / THE 5S FRAMEWORK</span><h2>Five practices.<br/>One visible standard.</h2></div><div className="principle-grid">{principles.map((p,i)=><article key={p[0]}><b>{p[0]}</b><div className={`p-icon p${i}`}>{["−","⌖","✦","≡","↻"][i]}</div><h3>{p[1]}</h3><p>{p[2]}</p></article>)}</div></section>
-  <footer><div className="shell"><div><span className="brand inverse"><span className="brand-mark"><i/><i/><i/><i/><i/></span>SiteSight</span><h2>Make improvement<br/><em>visible.</em></h2></div><div className="footer-note"><span>CONCEPT / 2026</span><p>A product vision for practical, evidence-led 5S inspection.</p><a href="#top">Back to top ↑</a></div></div></footer>
+  <nav className="site-nav"><a className="brand" href="#overview"><span className="brand-mark"><i/><i/><i/><i/><i/></span>SiteSight</a><div className="nav-links"><a href="#detection">Detection</a><a href="#workflow">Workflow</a><a href="#references">References</a></div><a className="nav-action" href="#detection">View concept <span>↘</span></a></nav>
+
+  <section className="screen hero" id="overview">
+   <img className="hero-image" src="/hero-workplace-v2.png" alt="Industrial workshop with three precisely marked 5S opportunities"/>
+   <div className="hero-shade"/>
+   <div className="hero-content">
+    <div className="kicker"><i/> AI-POWERED WORKPLACE REVIEW</div>
+    <h1>Turn workplace footage into a <em>5S action log.</em></h1>
+    <p>SiteSight detects visible 5S opportunities in workplace video and images, connects each finding to evidence, and gives improvement teams a clear record to review and act on.</p>
+    <div className="hero-actions"><a href="#detection">See one inspection <span>↓</span></a><div><b>Evidence first</b><small>Every finding stays connected to the image that created it.</small></div></div>
+   </div>
+   <div className="hero-index"><span>01</span><b>Detect</b><i/><span>02</span><b>Review</b><i/><span>03</span><b>Log</b></div>
+  </section>
+
+  <section className="screen detection" id="detection">
+   <div className="screen-head"><div><span>01 / VIDEO & IMAGE ANALYSIS</span><h2>Video in.<br/><em>5S evidence out.</em></h2></div><div className="screen-explainer"><div className="source-types"><span>VIDEO</span><span>IMAGE SETS</span></div><p>Upload workplace footage or a set of images. SiteSight samples the source, selects clear evidence frames, identifies possible 5S conditions, and logs each finding with its timestamp for review.</p></div></div>
+   <div className="evidence-wrap">
+    <div className="evidence-image"><img src="/workshop-analysis.png" alt="Evidence frame extracted from workplace video, showing cartons, an unlabeled bin and loose packaging"/><div className="e-label el1"><b>01</b><span>SET IN ORDER</span></div><div className="e-label el2"><b>02</b><span>STANDARDIZE</span></div><div className="e-label el3"><b>03</b><span>SHINE</span></div><div className="frame-meta"><span>SOURCE VIDEO · INSPECTION 042 · 01:00</span><span>EXTRACTED FRAME · 00:14</span></div></div>
+    <div className="finding-strip">
+     <article><b>01</b><div><span>SET IN ORDER</span><h3>Cartons cross the marked aisle</h3></div><small>00:14 · HIGH</small></article>
+     <article><b>02</b><div><span>STANDARDIZE</span><h3>Storage bin has no visible label</h3></div><small>00:22 · MEDIUM</small></article>
+     <article><b>03</b><div><span>SHINE</span><h3>Loose packaging below workbench</h3></div><small>00:41 · MEDIUM</small></article>
+    </div>
+   </div>
+  </section>
+
+  <section className="screen workflow" id="workflow">
+   <div className="workflow-title"><span>02 / FROM VIDEO TO ACTION</span><h2>Purpose-built for a<br/><em>low-cost first pass.</em></h2><p>The future product uses economical frame sampling and asks people—not the model—to make the final operational decision.</p></div>
+   <div className="workflow-body"><div className="steps">
+    <article><b>01</b><div><h3>Sample</h3><p>Capture one useful frame every two seconds, then remove blur and duplicates.</p></div><span>VIDEO → FRAMES</span></article>
+    <article><b>02</b><div><h3>Detect</h3><p>Find visible objects, labels, boundaries and unusual workplace conditions.</p></div><span>FRAMES → SIGNALS</span></article>
+    <article><b>03</b><div><h3>Interpret</h3><p>Map selected evidence to the applicable 5S rule and site context.</p></div><span>SIGNALS → FINDINGS</span></article>
+    <article><b>04</b><div><h3>Review & log</h3><p>Confirm the evidence, priority, owner and corrective action.</p></div><span>FINDINGS → ACTION</span></article>
+   </div><div className="five-s"><span>THE REVIEW LENS</span>{["Sort","Set in order","Shine","Standardize","Sustain"].map((x,i)=><div key={x}><b>0{i+1}</b><strong>{x}</strong></div>)}</div></div>
+  </section>
+
+  <section className="screen references" id="references">
+   <div className="reference-head"><div><span>03 / VISUAL REFERENCES</span><h2>Good 5S is<br/><em>easy to see.</em></h2></div><p>The product should recognize practical visual controls: clear locations, visible standards, clean conditions and evidence of improvement.</p></div>
+   <div className="reference-grid">{references.map((r,i)=><a href={r.href} target="_blank" rel="noreferrer" key={r.source}><div className="thumb"><img src={r.image} alt={r.label}/><span>0{i+1}</span></div><h3>{r.label}</h3><p>Reference: {r.source} <span>↗</span></p></a>)}</div>
+   <footer className="site-footer"><div className="footer-brand"><a className="brand inverse" href="#overview"><span className="brand-mark"><i/><i/><i/><i/><i/></span>SiteSight</a><span>Visual workplace intelligence</span></div><div className="footer-links"><a href="#detection">Detection</a><a href="#workflow">Workflow</a><a href="#references">References</a></div><div className="footer-meta"><span>CONCEPT · 2026</span><a href="#overview">Back to top ↑</a></div></footer>
+  </section>
  </main>
 }
