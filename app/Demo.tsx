@@ -30,7 +30,7 @@ export function Demo(){
   </section>
 
   <section className="screen detection" id="detection">
-   <div className="screen-head"><div><span>01 / VIDEO & IMAGE ANALYSIS</span><h2>How SiteSight reviews<br/>video and images.</h2></div><div className="screen-explainer"><div className="source-types"><span>VIDEO</span><span>IMAGE SETS</span></div><p>Upload workplace footage or a set of images. SiteSight samples the source, selects clear evidence frames, identifies possible 5S conditions, and logs each finding with its timestamp for review.</p></div></div>
+   <div className="screen-head"><div><span>01 / VIDEO & IMAGE ANALYSIS</span><h2>Upload workplace media.<br/>Get a detailed 5S log.</h2></div><div className="screen-explainer"><div className="source-types"><span>VIDEO</span><span>IMAGE SETS</span></div><p>SiteSight samples uploaded footage and images, selects clear evidence frames, identifies possible 5S conditions, and records each finding with its timestamp, severity and visual evidence.</p></div></div>
    <div className="evidence-wrap">
     <div className="evidence-image"><img src="/workshop-analysis.png" alt="Evidence frame extracted from workplace video, showing cartons, an unlabeled bin and loose packaging"/><div className="e-label el1"><b>01</b><span>SET IN ORDER</span></div><div className="e-label el2"><b>02</b><span>STANDARDIZE</span></div><div className="e-label el3"><b>03</b><span>SHINE</span></div><div className="frame-meta"><span>SOURCE VIDEO · INSPECTION 042 · 01:00</span><span>EXTRACTED FRAME · 00:14</span></div></div>
     <div className="finding-strip">
