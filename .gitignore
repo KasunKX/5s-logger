@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+**/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -15,7 +16,9 @@
 
 # next.js
 /.next/
+**/.next/
 /.vinext/
+**/.vinext/
 /out/
 
 # misc
@@ -32,6 +35,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+**/.env*
+!.env.example
+!**/.env.example
 
 # vercel
 .vercel
@@ -42,3 +48,15 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# Python / Flask
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+/app/data/
+
+# Local design and browser QA artifacts
+.tmp/

@@ -1,98 +1,104 @@
-# vinext-starter
+# SiteSight
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+SiteSight is an AI-assisted 5S workplace review product. This repository is a
+monorepo containing the existing Next.js experience and the Flask API that will
+power media ingestion, analysis jobs, findings, and review workflows.
+
+## Repository layout
+
+```text
+5S/
+├── frontend/       Next.js web application
+├── app/            Flask API
+├── package.json    Monorepo commands
+└── README.md
+```
+
+The previous frontend support directories (`build`, `db`, `drizzle`, `worker`,
+and their configuration) live under `frontend/` so the current application
+continues to build without losing any starter capabilities.
 
 ## Prerequisites
 
-- Node.js `>=22.13.0`
+- Node.js 22
+- Python 3.11 or newer
 
-## Quick Start
+## Install
+
+Install frontend and root workspace dependencies:
 
 ```bash
 npm install
+```
+
+Create a Python environment and install the API dependencies.
+
+Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r app\requirements.txt
+```
+
+macOS or Linux:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r app/requirements.txt
+```
+
+## Run locally
+
+With the Python environment active, start both applications:
+
+```bash
 npm run dev
-npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+- Frontend: http://localhost:3000
+- API: http://localhost:5000
+- Health check: http://localhost:5000/api/health
 
-## Included Shape
+Uploaded images are stored by the Flask service under `app/data/uploads/` and
+indexed in `app/data/sitesight.sqlite3`. The frontend creates a stable
+`sitesight_user_id` in browser local storage and sends it with upload and history
+requests so each browser sees its own image strip.
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+Current media endpoints:
 
-## Workspace Auth Headers
+- `POST /api/uploads`
+- `GET /api/uploads?user_id=...`
+- `GET /api/uploads/{upload_id}/image?user_id=...`
 
-OpenAI workspace sites can read the current user's email from
-`oai-authenticated-user-email`.
+The browser ID provides local ownership separation for development. It is not a
+replacement for authenticated user identity in production.
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+They can also be run separately:
 
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+npm run dev:frontend
+npm run dev:backend
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+## Useful commands
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+```bash
+npm run build          # production Next.js build
+npm run lint           # frontend lint
+npm test               # frontend and Flask tests
+```
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+## Environment
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+Copy `frontend/.env.example` to `frontend/.env.local` when the frontend needs a
+different API URL. Copy `app/.env.example` into your preferred local environment
+manager or export the variables before starting Flask.
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+## Deployment note
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+The current Vercel configuration now lives in `frontend/vercel.json`. Set the
+Vercel project Root Directory to `frontend`. The Flask service can be deployed
+independently once its storage, queueing, and model-execution requirements are
+defined.

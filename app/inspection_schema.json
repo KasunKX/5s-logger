@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "suggested_actions",
+    "positive_points",
+    "percentage",
+    "state",
+    "logs"
+  ],
+  "properties": {
+    "suggested_actions": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "positive_points": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 20
+    },
+    "percentage": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "state": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+    },
+    "logs": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "type",
+          "principle",
+          "observation",
+          "action",
+          "assessment"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["action", "positive"]
+          },
+          "principle": {
+            "type": "string",
+            "enum": ["Sort", "Set in order", "Shine", "Standardize", "Sustain"]
+          },
+          "observation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "action": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "assessment": {
+            "type": "string",
+            "enum": ["High action", "Medium action", "Low action", "Positive"]
+          }
+        }
+      }
+    }
+  }
+}
