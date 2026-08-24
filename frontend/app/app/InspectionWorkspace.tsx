@@ -73,7 +73,7 @@ function KpiIcon({ kind, tone }: { kind: KpiKind; tone: KpiTone }) {
 }
 
 const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000").replace(/\/$/, "");
+const apiBaseUrl = (process.env.NEXT_PUBLIC_API_URL || "https://demonstrated-particles-basic-tamil.trycloudflare.com").replace(/\/$/, "");
 const userStorageKey = "sitesight_user_id";
 
 function getOrCreateUserId() {
