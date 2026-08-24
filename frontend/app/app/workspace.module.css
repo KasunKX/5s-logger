@@ -352,42 +352,98 @@
 
 .scanLayer {
   position: absolute;
+  z-index: 3;
   inset: 0;
   overflow: hidden;
-  background: linear-gradient(90deg, #1a544a12, transparent 28%, transparent 72%, #1a544a12);
+  pointer-events: none;
+  background: #173f3920;
+  animation: imageGlow 2.8s ease-in-out infinite;
 }
 
-.scanGrid {
+.processing {
+  animation: processingFrame 1.7s ease-in-out infinite;
+}
+
+.processing .previewImage {
+  animation: processingImage 1.7s ease-in-out infinite;
+}
+
+.scanLayer::before {
+  content: "";
+  position: absolute;
+  inset: -15% auto -15% -45%;
+  width: 42%;
+  background: linear-gradient(
+    105deg,
+    transparent 8%,
+    #7fc5ae2e 28%,
+    #f2b35a68 52%,
+    #8bcdb53d 72%,
+    transparent 92%
+  );
+  filter: blur(22px);
+  transform: skewX(-9deg);
+  mix-blend-mode: screen;
+  animation: glowSweep 2.9s cubic-bezier(.42, 0, .3, 1) infinite;
+}
+
+.scanLayer::after {
+  content: "";
   position: absolute;
   inset: 0;
-  opacity: .16;
-  background-image:
-    linear-gradient(#f0b150 1px, transparent 1px),
-    linear-gradient(90deg, #f0b150 1px, transparent 1px);
-  background-size: 42px 42px;
-  mask-image: linear-gradient(90deg, transparent, #000 20%, #000 80%, transparent);
+  border: 1px solid #eeb15a45;
+  box-shadow:
+    inset 0 0 34px #f1ad4724,
+    inset 0 0 76px #68b39d17;
+  animation: edgeGlow 1.8s ease-in-out infinite;
 }
 
-.scanLine {
+.scanGlow {
   position: absolute;
-  z-index: 2;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: #f0ac48;
-  box-shadow: 0 0 14px #efaa42, 0 18px 38px 18px #e6a13b23;
-  animation: scan 2.2s cubic-bezier(.4, 0, .55, 1) infinite;
+  width: 42%;
+  aspect-ratio: 1;
+  left: 12%;
+  top: 18%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #f2b35a38 0, #71b8a124 34%, transparent 70%);
+  filter: blur(15px);
+  mix-blend-mode: screen;
+  animation: glowDrift 3.4s ease-in-out infinite alternate;
 }
 
-@keyframes scan {
-  0% { top: 3%; opacity: .35; }
-  12% { opacity: 1; }
-  88% { opacity: 1; }
-  100% { top: 97%; opacity: .35; }
+@keyframes glowSweep {
+  0% { transform: translateX(0) skewX(-9deg); opacity: .25; }
+  18% { opacity: .75; }
+  82% { opacity: .75; }
+  100% { transform: translateX(355%) skewX(-9deg); opacity: .2; }
+}
+
+@keyframes imageGlow {
+  50% { background-color: #2a675d35; }
+}
+
+@keyframes edgeGlow {
+  50% { opacity: .58; box-shadow: inset 0 0 50px #f1ad4730, inset 0 0 95px #68b39d20; }
+}
+
+@keyframes glowDrift {
+  0% { transform: translate(-8%, -5%) scale(.78); opacity: .35; }
+  100% { transform: translate(115%, 45%) scale(1.18); opacity: .72; }
+}
+
+@keyframes processingFrame {
+  0%, 100% { box-shadow: 0 0 0 1px #d9973d45, 0 0 12px #d9973d18; }
+  50% { box-shadow: 0 0 0 2px #e6aa5985, 0 0 30px #69ae993f; }
+}
+
+@keyframes processingImage {
+  0%, 100% { filter: brightness(.94) saturate(.94); }
+  50% { filter: brightness(1.09) saturate(1.12); }
 }
 
 .stageStatus {
   position: absolute;
+  z-index: 4;
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
@@ -436,6 +492,7 @@
 
 .fileMeta {
   position: absolute;
+  z-index: 4;
   right: 12px;
   bottom: 11px;
   max-width: calc(100% - 24px);
@@ -629,18 +686,29 @@
 }
 
 .logLoader {
-  height: 31px;
+  height: 38px;
   display: flex;
   align-items: end;
-  gap: 4px;
+  gap: 5px;
 }
 
-.logLoader i { width: 4px; background: #d79238; animation: levels .9s ease-in-out infinite alternate; }
-.logLoader i:nth-child(1) { height: 11px; }
-.logLoader i:nth-child(2) { height: 25px; animation-delay: .2s; }
-.logLoader i:nth-child(3) { height: 17px; animation-delay: .4s; }
+.logLoader i {
+  --bar-peak: 24px;
+  width: 5px;
+  height: 8px;
+  border-radius: 3px 3px 1px 1px;
+  background: #d79238;
+  box-shadow: 0 0 9px #d7923830;
+  animation: barPulse 1.05s ease-in-out infinite;
+}
+.logLoader i:nth-child(1) { --bar-peak: 21px; animation-delay: -.7s; }
+.logLoader i:nth-child(2) { --bar-peak: 32px; animation-delay: -.35s; }
+.logLoader i:nth-child(3) { --bar-peak: 26px; animation-delay: 0s; }
 
-@keyframes levels { to { height: 7px; opacity: .45; } }
+@keyframes barPulse {
+  0%, 100% { height: 8px; opacity: .38; }
+  50% { height: var(--bar-peak); opacity: 1; }
+}
 
 .recentPanel {
   grid-column: 1 / -1;
@@ -877,6 +945,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scanLine { animation-duration: 5s; }
-  .statusDot.scanning, .logLoader i { animation: none; }
+  .scanLayer::before,
+  .scanGlow { display: none; }
+  .processing,
+  .processing .previewImage,
+  .scanLayer,
+  .scanLayer::after,
+  .statusDot.scanning,
+  .logLoader i { animation-duration: 2.2s; }
 }

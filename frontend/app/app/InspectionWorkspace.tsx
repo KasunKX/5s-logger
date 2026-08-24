@@ -454,7 +454,7 @@ export function InspectionWorkspace() {
           />
 
           <div
-            className={`${styles.mediaStage} ${isDragging ? styles.dragging : ""}`}
+            className={`${styles.mediaStage} ${isDragging ? styles.dragging : ""} ${scanState === "scanning" ? styles.processing : ""}`}
             onDragEnter={(event) => {
               event.preventDefault();
               setIsDragging(true);
@@ -495,8 +495,7 @@ export function InspectionWorkspace() {
                 <div className={styles.cornerMarks} aria-hidden="true"><i /><i /><i /><i /></div>
                 {scanState === "scanning" && (
                   <div className={styles.scanLayer} aria-hidden="true">
-                    <div className={styles.scanLine} />
-                    <div className={styles.scanGrid} />
+                    <div className={styles.scanGlow} />
                   </div>
                 )}
                 {scanState === "scanning" && (
