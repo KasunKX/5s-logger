@@ -12,6 +12,7 @@ from app.inspection_service import InspectionError
 from app.media_store import (
     claim_inspection_slot,
     create_upload,
+    delete_upload,
     get_upload,
     list_uploads,
     save_inspection,
@@ -191,6 +192,80 @@ def create_inspection_route() -> tuple[object, int]:
             },
         }
     ), 201
+
+
+@api.post("/uploads/<upload_id>/inspection")
+def inspect_saved_upload(upload_id: str) -> tuple[object, int]:
+    """Run another inspection against an existing owned image."""
+
+    user_id = _valid_user_id(request.form.get("user_id"))
+    if not user_id:
+        return jsonify({"error": "The request could not be accepted."}), 400
+
+    record = get_upload(upload_id, user_id)
+    if not record:
+        return jsonify({"error": "The saved image could not be found."}), 404
+
+    limit = claim_inspection_slot(
+        user_id,
+        user_limit=current_app.config["INSPECTION_USER_HOURLY_LIMIT"],
+        system_limit=current_app.config["INSPECTION_SYSTEM_HOURLY_LIMIT"],
+    )
+    if not limit["allowed"]:
+        if limit["scope"] == "user":
+            message = "You have reached the hourly inspection limit. Please try again later."
+        else:
+            message = "Inspection capacity is full for this hour. Please try again later."
+        response = jsonify(
+            {
+                "error": message,
+                "retry_after_seconds": limit["retry_after_seconds"],
+            }
+        )
+        response.status_code = 429
+        response.headers["Retry-After"] = str(limit["retry_after_seconds"])
+        return response, 429
+
+    analyzer = current_app.config["INSPECTION_ANALYZER"]
+    try:
+        inspection = analyzer(upload_path(record))
+    except InspectionError:
+        current_app.logger.exception("Image reinspection failed")
+        return jsonify(
+            {"error": "The inspection could not be completed. Please try again."}
+        ), 503
+
+    save_inspection(upload_id, user_id, inspection)
+    record["inspection"] = inspection
+    return jsonify(
+        {
+            "inspection": inspection,
+            "upload": _serialize_upload(record),
+            "remaining": {
+                "user": limit["user_remaining"],
+                "system": limit["system_remaining"],
+            },
+        }
+    ), 200
+
+
+@api.delete("/uploads/<upload_id>")
+def delete_upload_route(upload_id: str) -> tuple[object, int]:
+    """Delete one image only when it belongs to the requesting browser user."""
+
+    user_id = _valid_user_id(request.args.get("user_id"))
+    if not user_id:
+        return jsonify({"error": "The image could not be found."}), 404
+
+    try:
+        deleted = delete_upload(upload_id, user_id)
+    except OSError:
+        current_app.logger.exception("Stored image deletion failed")
+        return jsonify({"error": "The image could not be removed."}), 409
+
+    if not deleted:
+        return jsonify({"error": "The image could not be found."}), 404
+    return jsonify({"deleted": True}), 200
 
 
 @api.get("/uploads/<upload_id>/image")

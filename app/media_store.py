@@ -193,6 +193,30 @@ def save_inspection(
         connection.commit()
 
 
+def delete_upload(upload_id: str, user_id: str) -> bool:
+    """Permanently remove one owned upload and its metadata."""
+
+    record = get_upload(upload_id, user_id)
+    if not record:
+        return False
+
+    uploads_root = Path(current_app.config["MEDIA_UPLOADS_ROOT"]).resolve()
+    path = upload_path(record).resolve()
+    if uploads_root not in path.parents:
+        raise RuntimeError("Refusing to delete a file outside the upload store.")
+
+    if path.exists():
+        path.unlink()
+
+    with closing(_connect()) as connection:
+        connection.execute(
+            "DELETE FROM uploads WHERE id = ? AND user_id = ?",
+            (upload_id, user_id),
+        )
+        connection.commit()
+    return True
+
+
 def claim_inspection_slot(
     user_id: str,
     *,

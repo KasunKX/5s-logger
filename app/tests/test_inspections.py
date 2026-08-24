@@ -93,6 +93,26 @@ class InspectionRouteTest(unittest.TestCase):
         self.assertEqual(limited.status_code, 429)
         self.assertIn("capacity", limited.get_json()["error"])
 
+    def test_reinspects_and_deletes_an_owned_upload(self) -> None:
+        created = self.inspect("browser_inspection_a")
+        upload = created.get_json()["upload"]
+
+        repeated = self.client.post(
+            f"/api/uploads/{upload['id']}/inspection",
+            data={"user_id": "browser_inspection_a"},
+        )
+        self.assertEqual(repeated.status_code, 200)
+        self.assertEqual(repeated.get_json()["inspection"], INSPECTION_RESULT)
+
+        removed = self.client.delete(
+            f"/api/uploads/{upload['id']}?user_id=browser_inspection_a"
+        )
+        self.assertEqual(removed.status_code, 200)
+        self.assertTrue(removed.get_json()["deleted"])
+
+        missing = self.client.get(upload["image_url"])
+        self.assertEqual(missing.status_code, 404)
+
 
 if __name__ == "__main__":
     unittest.main()

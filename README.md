@@ -22,6 +22,7 @@ continues to build without losing any starter capabilities.
 
 - Node.js 22
 - Python 3.11 or newer
+- A locally installed and signed-in Codex command-line tool for image inspection
 
 ## Install
 
@@ -68,12 +69,19 @@ requests so each browser sees its own image strip.
 
 Current media endpoints:
 
+- `POST /api/inspections`
 - `POST /api/uploads`
 - `GET /api/uploads?user_id=...`
 - `GET /api/uploads/{upload_id}/image?user_id=...`
 
 The browser ID provides local ownership separation for development. It is not a
 replacement for authenticated user identity in production.
+
+An inspection creates a reduced review copy of the image, requests one
+schema-validated 5S result from the local Codex process, and stores that result
+with the original upload. Inspection requests use rolling one-hour limits of 10
+per browser identity and 30 across the service. The review copy is temporary and
+is removed after each request.
 
 They can also be run separately:
 
@@ -100,5 +108,5 @@ manager or export the variables before starting Flask.
 
 The current Vercel configuration now lives in `frontend/vercel.json`. Set the
 Vercel project Root Directory to `frontend`. The Flask service can be deployed
-independently once its storage, queueing, and model-execution requirements are
-defined.
+independently on a host where the Codex command-line tool is installed and
+authenticated. Vercel only hosts the frontend in this setup.
