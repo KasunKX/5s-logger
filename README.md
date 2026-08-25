@@ -110,3 +110,5 @@ The current Vercel configuration now lives in `frontend/vercel.json`. Set the
 Vercel project Root Directory to `frontend`. The Flask service can be deployed
 independently on a host where the Codex command-line tool is installed and
 authenticated. Vercel only hosts the frontend in this setup.
+# redeploy trigger 2026-08-25T05:26:40Z
+# redeploy trigger 2026-08-25T05:26:56Z
