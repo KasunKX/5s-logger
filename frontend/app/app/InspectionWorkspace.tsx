@@ -108,6 +108,7 @@ function formatBytes(bytes: number) {
 
 export function InspectionWorkspace() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const requestSequence = useRef(0);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -435,6 +436,14 @@ export function InspectionWorkspace() {
               )}
               {file && (
                 <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  Take photo
+                </button>
+              )}
+              {file && (
+                <button
                   className={styles.primarySmall}
                   type="button"
                   onClick={() => inputRef.current?.click()}
@@ -450,6 +459,14 @@ export function InspectionWorkspace() {
             className={styles.fileInput}
             type="file"
             accept="image/jpeg,image/png,image/webp"
+            onChange={onInput}
+          />
+          <input
+            ref={cameraInputRef}
+            className={styles.fileInput}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
             onChange={onInput}
           />
 
@@ -478,6 +495,16 @@ export function InspectionWorkspace() {
                 <h2>Drop an image here</h2>
                 <p>or choose a file from your device</p>
                 <span className={styles.chooseButton}>Choose image</span>
+                <button
+                  className={styles.captureButton}
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    cameraInputRef.current?.click();
+                  }}
+                >
+                  Take photo
+                </button>
                 <small>Common image types · up to 15 megabytes</small>
               </div>
             ) : (
