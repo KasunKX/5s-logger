@@ -109,7 +109,13 @@ function formatBytes(bytes: number) {
 export function InspectionWorkspace() {
   const inputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const requestSequence = useRef(0);
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState("");
+  const [capturedPreview, setCapturedPreview] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState("");
   const [scanState, setScanState] = useState<ScanState>("idle");
@@ -345,6 +351,77 @@ export function InspectionWorkspace() {
     }
   };
 
+  const stopCameraStream = () => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+  };
+
+  const closeCamera = () => {
+    stopCameraStream();
+    setCameraOpen(false);
+    setCapturedPreview("");
+    setCameraError("");
+  };
+
+  const openCamera = async () => {
+    setCapturedPreview("");
+    setCameraError("");
+
+    if (!navigator.mediaDevices?.getUserMedia) {
+      cameraInputRef.current?.click();
+      return;
+    }
+
+    setCameraOpen(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+    } catch {
+      setCameraError("Camera access was denied or is unavailable on this device.");
+    }
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas || !video.videoWidth) return;
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    setCapturedPreview(canvas.toDataURL("image/jpeg", 0.92));
+  };
+
+  const confirmCapturedPhoto = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+        const capturedFile = new File([blob], `camera-${Date.now()}.jpg`, {
+          type: "image/jpeg",
+        });
+        closeCamera();
+        loadFile(capturedFile);
+      },
+      "image/jpeg",
+      0.92,
+    );
+  };
+
+  useEffect(() => {
+    return () => stopCameraStream();
+  }, []);
+
   const onInput = (event: ChangeEvent<HTMLInputElement>) => {
     loadFile(event.target.files?.[0]);
     event.target.value = "";
@@ -435,10 +512,7 @@ export function InspectionWorkspace() {
                 </button>
               )}
               {file && (
-                <button
-                  type="button"
-                  onClick={() => cameraInputRef.current?.click()}
-                >
+                <button type="button" onClick={() => void openCamera()}>
                   Take photo
                 </button>
               )}
@@ -500,7 +574,7 @@ export function InspectionWorkspace() {
                   type="button"
                   onClick={(event) => {
                     event.stopPropagation();
-                    cameraInputRef.current?.click();
+                    void openCamera();
                   }}
                 >
                   Take photo
@@ -683,6 +757,68 @@ export function InspectionWorkspace() {
           </div>
         </section>
       </section>
+
+      {cameraOpen && (
+        <div className={styles.cameraOverlay} role="dialog" aria-modal="true" aria-label="Take a photo">
+          <div className={styles.cameraPanel}>
+            {cameraError ? (
+              <div className={styles.cameraError}>
+                <p>{cameraError}</p>
+                <div className={styles.cameraControls}>
+                  <button type="button" onClick={closeCamera}>
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className={styles.cameraStage}>
+                  <video
+                    ref={videoRef}
+                    className={styles.cameraVideo}
+                    style={{ display: capturedPreview ? "none" : "block" }}
+                    playsInline
+                    muted
+                  />
+                  {capturedPreview && (
+                    <img className={styles.cameraVideo} src={capturedPreview} alt="Captured preview" />
+                  )}
+                </div>
+                <div className={styles.cameraControls}>
+                  {capturedPreview ? (
+                    <>
+                      <button type="button" onClick={() => setCapturedPreview("")}>
+                        Retake
+                      </button>
+                      <button
+                        className={styles.primarySmall}
+                        type="button"
+                        onClick={confirmCapturedPhoto}
+                      >
+                        Upload
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button type="button" onClick={closeCamera}>
+                        Cancel
+                      </button>
+                      <button
+                        className={styles.primarySmall}
+                        type="button"
+                        onClick={capturePhoto}
+                      >
+                        Take photo
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+      <canvas ref={canvasRef} className={styles.hiddenCanvas} aria-hidden="true" />
     </main>
   );
 }
