@@ -1,8 +1,10 @@
-"""Run a bounded 5S image review through the locally installed Codex tool."""
+"""Run a bounded 5S image review through the locally installed Codex tool,
+falling back to the local Claude Code CLI when Codex is unavailable."""
 
 from __future__ import annotations
 
 import json
+import logging
 import os
 import shutil
 import subprocess
@@ -13,7 +15,10 @@ from typing import Any
 from PIL import Image, ImageOps
 
 
+logger = logging.getLogger(__name__)
+
 SCHEMA_PATH = Path(__file__).with_name("inspection_schema.json")
+CLAUDE_SCRATCH_ROOT = Path(__file__).with_name("data") / ".claude-inspection-scratch"
 PRINCIPLES = {"Sort", "Set in order", "Shine", "Standardize", "Sustain"}
 ASSESSMENTS = {"High action", "Medium action", "Low action", "Positive"}
 
@@ -49,6 +54,23 @@ def _codex_executable() -> str:
     if not executable:
         raise InspectionError("The inspection service is unavailable.")
     return executable
+
+
+def _claude_executable() -> str:
+    configured = os.getenv("CLAUDE_EXECUTABLE")
+    if configured:
+        return configured
+
+    executable = shutil.which("claude.exe") or shutil.which("claude")
+    if not executable:
+        raise InspectionError("The fallback inspection service is unavailable.")
+    return executable
+
+
+def _claude_json_schema() -> str:
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    schema.pop("$schema", None)
+    return json.dumps(schema)
 
 
 def _prepare_review_copy(source: Path, destination: Path) -> None:
@@ -125,62 +147,136 @@ def _validate_result(value: Any) -> dict[str, Any]:
     return value
 
 
+def _run_codex_inspection(review_path: Path, working_root: Path) -> dict[str, Any]:
+    timeout_seconds = int(os.getenv("CODEX_INSPECTION_TIMEOUT", "180"))
+    result_path = working_root / "inspection.json"
+
+    command = [
+        _codex_executable(),
+        "exec",
+        "--ephemeral",
+        "--ignore-user-config",
+        "--ignore-rules",
+        "--skip-git-repo-check",
+        "--sandbox",
+        "read-only",
+        "--color",
+        "never",
+        "--cd",
+        str(working_root),
+        "--image",
+        str(review_path),
+        "--output-schema",
+        str(SCHEMA_PATH),
+        "--output-last-message",
+        str(result_path),
+    ]
+    model = os.getenv("CODEX_INSPECTION_MODEL")
+    if model:
+        command.extend(["--model", model])
+    command.append("-")
+
+    try:
+        completed = subprocess.run(
+            command,
+            input=INSPECTION_PROMPT,
+            text=True,
+            capture_output=True,
+            timeout=timeout_seconds,
+            check=False,
+            env={**os.environ, "NO_COLOR": "1"},
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise InspectionError("The inspection could not be completed in time.") from error
+
+    if completed.returncode != 0 or not result_path.is_file():
+        raise InspectionError("The inspection service did not return a result.")
+
+    try:
+        return json.loads(result_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise InspectionError("The inspection result could not be read.") from error
+
+
+def _run_claude_inspection(review_path: Path) -> dict[str, Any]:
+    timeout_seconds = int(os.getenv("CLAUDE_INSPECTION_TIMEOUT", "120"))
+    model = os.getenv("CLAUDE_INSPECTION_MODEL", "claude-haiku-4-5")
+    prompt = f"{INSPECTION_PROMPT}\n\nImage to review: {review_path}"
+
+    CLAUDE_SCRATCH_ROOT.mkdir(parents=True, exist_ok=True)
+
+    command = [
+        _claude_executable(),
+        "-p",
+        prompt,
+        "--output-format",
+        "json",
+        "--json-schema",
+        _claude_json_schema(),
+        "--allowedTools",
+        "Read",
+        "--add-dir",
+        str(review_path.parent),
+        "--permission-mode",
+        "bypassPermissions",
+        "--model",
+        model,
+    ]
+
+    try:
+        completed = subprocess.run(
+            command,
+            text=True,
+            capture_output=True,
+            timeout=timeout_seconds,
+            check=False,
+            cwd=str(CLAUDE_SCRATCH_ROOT),
+            env={**os.environ, "NO_COLOR": "1"},
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise InspectionError(
+            "The fallback inspection could not be completed in time."
+        ) from error
+
+    if completed.returncode != 0:
+        raise InspectionError("The fallback inspection service did not return a result.")
+
+    try:
+        payload = json.loads(completed.stdout)
+    except json.JSONDecodeError as error:
+        raise InspectionError("The fallback inspection result could not be read.") from error
+
+    result = payload.get("structured_output")
+    if not isinstance(result, dict):
+        raise InspectionError(
+            "The fallback inspection result did not match the required format."
+        )
+    return result
+
+
 def analyze_workplace_image(source_path: str | Path) -> dict[str, Any]:
-    """Reduce an image, ask local Codex for strict JSON, and validate the result."""
+    """Reduce an image, ask local Codex for strict JSON, and validate the result.
+
+    Falls back to the local Claude Code CLI when Codex fails (quota, crash,
+    timeout, or malformed output) so one provider outage doesn't take
+    inspections down.
+    """
 
     source = Path(source_path).resolve()
-    timeout_seconds = int(os.getenv("CODEX_INSPECTION_TIMEOUT", "180"))
 
     with TemporaryDirectory(prefix="sitesight-inspection-") as temporary:
         temporary_root = Path(temporary)
         review_path = temporary_root / "workplace-review.jpg"
-        result_path = temporary_root / "inspection.json"
         _prepare_review_copy(source, review_path)
 
-        command = [
-            _codex_executable(),
-            "exec",
-            "--ephemeral",
-            "--ignore-user-config",
-            "--ignore-rules",
-            "--skip-git-repo-check",
-            "--sandbox",
-            "read-only",
-            "--color",
-            "never",
-            "--cd",
-            str(temporary_root),
-            "--image",
-            str(review_path),
-            "--output-schema",
-            str(SCHEMA_PATH),
-            "--output-last-message",
-            str(result_path),
-        ]
-        model = os.getenv("CODEX_INSPECTION_MODEL")
-        if model:
-            command.extend(["--model", model])
-        command.append("-")
-
         try:
-            completed = subprocess.run(
-                command,
-                input=INSPECTION_PROMPT,
-                text=True,
-                capture_output=True,
-                timeout=timeout_seconds,
-                check=False,
-                env={**os.environ, "NO_COLOR": "1"},
+            raw_result = _run_codex_inspection(review_path, temporary_root)
+            return _validate_result(raw_result)
+        except InspectionError as codex_error:
+            logger.warning(
+                "Codex inspection failed, falling back to Claude Code: %s",
+                codex_error,
             )
-        except (OSError, subprocess.TimeoutExpired) as error:
-            raise InspectionError("The inspection could not be completed in time.") from error
 
-        if completed.returncode != 0 or not result_path.is_file():
-            raise InspectionError("The inspection service did not return a result.")
-
-        try:
-            result = json.loads(result_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as error:
-            raise InspectionError("The inspection result could not be read.") from error
-
-    return _validate_result(result)
+        raw_result = _run_claude_inspection(review_path)
+        return _validate_result(raw_result)
