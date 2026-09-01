@@ -76,8 +76,15 @@ def init_media_store(flask_app: Flask) -> None:
 
 
 def _connect() -> sqlite3.Connection:
-    connection = sqlite3.connect(current_app.config["MEDIA_DATABASE_PATH"])
+    connection = sqlite3.connect(
+        current_app.config["MEDIA_DATABASE_PATH"], timeout=30
+    )
     connection.row_factory = sqlite3.Row
+    # WAL lets concurrent readers/writers (multiple gunicorn workers) proceed
+    # without the "database is locked" errors the default journal mode gives
+    # under concurrent access.
+    connection.execute("PRAGMA journal_mode=WAL")
+    connection.execute("PRAGMA busy_timeout=30000")
     return connection
 
 
