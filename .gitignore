@@ -60,3 +60,4 @@ venv/
 
 # Local design and browser QA artifacts
 .tmp/
+tunnel.log
